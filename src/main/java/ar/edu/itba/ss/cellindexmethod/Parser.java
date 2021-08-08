@@ -22,7 +22,7 @@ public class Parser{
 		int N = 7;
 		double L = 5;
 		int M = 3;
-		double rc = 0.2;
+		double rc = 0.45;
 		boolean wallPeriod = true;
 		// Asumimos que está parseado el archivo. Si hay algo mal, tirar excepción	
 		
@@ -35,7 +35,7 @@ public class Parser{
 		list.add(new Particle(4, 2.1, 2.1, 0.25));
 		list.add(new Particle(5, 0.95, 0.95, 0.25));
 		list.add(new Particle(6, 2.01, 0.95, 0.25));
-		list.add(new Particle(7, 4.01, 1.05, 0.25));
+		list.add(new Particle(7, 4.01, 2.05, 0.25));
 		list.add(new Particle(8, 4.6, 4.5, 0.25));
 		list.add(new Particle(9, 4.6, 0.4, 0.25));
 		
