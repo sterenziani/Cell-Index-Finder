@@ -14,7 +14,7 @@ public class App
         // time passes
         Instant end = Instant.now();
         Duration timeElapsed = Duration.between(start, end);
-        System.out.println(timeElapsed.toHours() + ":" + timeElapsed.toMinutes() + ":" + timeElapsed.toSeconds());
+        System.out.println(timeElapsed.toHours() + ":" + timeElapsed.toMinutes() + ":" + timeElapsed.getSeconds());
     }
     
     private static Input getInput() {
