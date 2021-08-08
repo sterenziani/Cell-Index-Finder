@@ -1,13 +1,12 @@
 package ar.edu.itba.ss.cellindexmethod;
-
-
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class BruteForceFinder implements NeighborFinder{
 
 	@Override
-	public Output findNeighbors(Input input)
+	public Map<Particle, List<Particle>> findNeighbors(Input input)
 	{
 		List<Pair> neighbors = new LinkedList<>();
 
