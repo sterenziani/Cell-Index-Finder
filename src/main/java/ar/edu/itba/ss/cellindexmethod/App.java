@@ -7,14 +7,19 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
         Input input = getInput();
-
         Instant start = Instant.now();
-        // time passes
+        CellIndexFinder finder = new CellIndexFinder();
+        try{
+        	finder.findNeighbors(input);
+		}
+        catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
         Instant end = Instant.now();
         Duration timeElapsed = Duration.between(start, end);
-        System.out.println(timeElapsed.toHours() + ":" + timeElapsed.toMinutes() + ":" + timeElapsed.getSeconds());
+        System.out.println("Execution finished in " +timeElapsed.toMillis() +" ms");
     }
     
     private static Input getInput() {

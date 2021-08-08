@@ -17,7 +17,7 @@ public class BruteForceFinder implements NeighborFinder{
 			{
 				if(!p1.equals(p2) && p1.getId() < p2.getId())
 				{
-					if( p1.isNeighbor(p2, input.getRc()) && !neighbors.contains(new Pair(p1, p2))
+					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()) && !neighbors.contains(new Pair(p1, p2))
 							&& !neighbors.contains(new Pair(p2, p1)) )
 					{
 								neighbors.add(new Pair(p1, p2));

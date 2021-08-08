@@ -14,11 +14,40 @@ public class Particle {
 		this.radius = radius;
 	}
 	
-	public boolean isNeighbor(Particle p2, double rc)
+	public double getEdgeDistanceTo(Particle p2, double L, int M, boolean loop)
 	{
+		if(loop)
+			return getLoopingEdgeDistanceTo(p2, L, M);
 		double centerDistance = Math.sqrt(Math.pow(p2.getX() - x, 2) + Math.pow(p2.getY() - y, 2));
-		double edgeDistance = centerDistance - radius - p2.getRadius();
-		return edgeDistance <= rc;
+		return centerDistance - radius - p2.getRadius();
+	}
+	
+	public double getLoopingEdgeDistanceTo(Particle p2, double L, int M)
+	{
+		double x1 = x;
+		double y1 = y;
+		double x2 = p2.getX();
+		double y2 = p2.getY();
+		if(x1 < x2 && Math.abs(x1-x2) > Math.abs(L+x1-x2))
+			x1 += L;
+		else if(x2 < x1 && Math.abs(x1-x2) > Math.abs(x1-x2-L))
+			x2 += L;
+		if(y1 < y2 && Math.abs(y1-y2) > Math.abs(L+y1-y2))
+			y1 += L;
+		else if(y2 < y1 && Math.abs(y1-y2) > Math.abs(y1-y2-L))
+			y2 += L;
+		double centerDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+		return centerDistance - radius - p2.getRadius();
+	}
+	
+	public boolean isNeighbor(Particle p2, double L, int M, boolean loop, double rc)
+	{
+		return Double.compare(getEdgeDistanceTo(p2, L, M, loop), rc) <= 0;
+	}
+	
+	public boolean isOverlapping(Particle p, double L, int M, boolean loop)
+	{
+		return getEdgeDistanceTo(p, L, M, loop) < 0;
 	}
 	
 	public long getId() {
@@ -51,7 +80,7 @@ public class Particle {
 		if (getClass() != obj.getClass())
 			return false;
 		Particle other = (Particle) obj;
-		if (id != other.id)
+		if (id != other.getId())
 			return false;
 		return true;
 	}
