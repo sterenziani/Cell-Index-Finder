@@ -1,17 +1,28 @@
 package ar.edu.itba.ss.cellindexmethod;
 
+import jdk.internal.net.http.common.Pair;
+
+import java.util.LinkedList;
+import java.util.List;
+
 public class BruteForceFinder implements NeighborFinder{
 
 	@Override
 	public Output findNeighbors(Input input)
 	{
+		List<Pair<Particle, Particle>> neighbors = new LinkedList<>();
+
 		for(Particle p1 : input.getParticles())
 		{
 			for(Particle p2 : input.getParticles())
 			{
 				if(!p1.equals(p2) && p1.getId() < p2.getId())
 				{
-					// TODO: Check if neighbors
+					if( p1.isNeighbor(p2, input.getRc()) && !neighbors.contains(new Pair<>(p1, p2))
+							&& !neighbors.contains(new Pair<>(p2, p1)) )
+					{
+								neighbors.add(new Pair<>(p1, p2));
+					}
 				}
 			}
 		}
