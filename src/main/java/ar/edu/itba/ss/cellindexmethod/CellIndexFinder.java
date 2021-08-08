@@ -24,13 +24,37 @@ public class CellIndexFinder implements NeighborFinder{
         {
         	for(int j=0; j < input.getM(); j++)
         	{
-    			for(CIMParticle p : matrix[i][j].getList())
+    			for(CIMParticle p1 : matrix[i][j].getList())
     			{
-    				// TODO: Check neighbors in same cell (should check if neighbors)
-    				// TODO: Check neighbors in North
-    				// TODO: Check neighbors in NE
-    				// TODO: Check neighbors in East
-    				// TODO: Check neighbors in SE
+    				// Look for neighbors in this cell
+    				for(CIMParticle p2 : matrix[i][j].getList())
+    				{
+    					if(!p1.equals(p2) && p1.getParticle().getId() < p2.getParticle().getId()
+    							&& p1.getParticle().isNeighbor(p2.getParticle(), input.getRc()))
+    					{
+    						p1.getNeighbors().add(p2.getParticle());
+    						p2.getNeighbors().add(p1.getParticle());
+    					}
+    				}
+    				// Check neighbors in Upper Cell
+    				int upperRow = i-1;
+    				if(upperRow > 0 || input.getWallPeriod())
+    				{
+    					// Loop to other side
+    					upperRow = upperRow % input.getM();
+        				for(CIMParticle p2 : matrix[upperRow][j].getList())
+        				{
+        					if(p1.getParticle().isNeighbor(p2.getParticle(), input.getRc()))
+        					{
+        						p1.getNeighbors().add(p2.getParticle());
+        						p2.getNeighbors().add(p1.getParticle());
+        					}
+        				}
+    				}
+
+    				// TODO: Check neighbors in Upper-Right Cell
+    				// TODO: Check neighbors in Right Cell
+    				// TODO: Check neighbors in Lower-Right Cell
     			}
         	}
         }

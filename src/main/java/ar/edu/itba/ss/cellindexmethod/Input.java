@@ -34,6 +34,10 @@ public class Input {
 	public double getRc() {
 		return rc;
 	}
+	
+	public boolean getWallPeriod() {
+		return wallPeriod;
+	}
 
 	public List<Particle> getParticles() {
 		return particles;
