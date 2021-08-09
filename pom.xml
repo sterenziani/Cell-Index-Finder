@@ -5,6 +5,7 @@
   <groupId>ar.edu.itba.ss</groupId>
   <artifactId>cellindexmethod</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
   <build>
     <plugins>
       <plugin>
@@ -14,10 +15,35 @@
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <configuration>
+              <outputDirectory>
+                ${project.build.directory}/libs
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>libs/</classpathPrefix>
+              <mainClass>
+                ar.edu.itba.ss.cellindexmethod.Parser
+              </mainClass>
+            </manifest>
+          </archive>
+        </configuration>
       </plugin>
     </plugins>
   </build>
-  <packaging>jar</packaging>
 
   <name>cellindexmethod</name>
   <url>http://maven.apache.org</url>
