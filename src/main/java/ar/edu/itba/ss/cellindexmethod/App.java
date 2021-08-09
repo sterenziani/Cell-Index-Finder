@@ -1,12 +1,17 @@
 package ar.edu.itba.ss.cellindexmethod;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class App
 {
-    public static void main( String[] args )
+	private final static String OUTPUT_FILE = "output.txt";
+	
+    public static void main( String[] args ) throws IOException
     {
         Instant start, end;
         Input input = getInput(args);
@@ -15,25 +20,40 @@ public class App
         	// Brute Force
             start = Instant.now();
             NeighborFinder finder = new BruteForceFinder();
-            Map<Particle, List<Particle>> map = runFinder(finder, input);
+            Map<Particle, Set<Particle>> map = runFinder(finder, input);
             end = Instant.now();
             printNeighbors(map);
             Duration timeElapsed = Duration.between(start, end);
             System.out.println("Brute Force Execution finished in " +timeElapsed.toMillis() +" ms\n\n\n");
             
             // Cell Index Method
-            start = Instant.now();
             finder = new CellIndexFinder();
+            start = Instant.now();
             map = runFinder(finder, input);
             end = Instant.now();
             printNeighbors(map);
             timeElapsed = Duration.between(start, end);
             System.out.println("CellIndexFinder Execution finished in " +timeElapsed.toMillis() +" ms");
+            outputNeighbors(map);
         }
     }
+    
+    private static void outputNeighbors(Map<Particle, Set<Particle>> map) throws IOException {
+	    BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE));
+        if(map != null){
+            for(Particle p : map.keySet())
+            {
+            	writer.write("[" +p.getId() +"\t");
+                for(Particle n : map.get(p))
+                	writer.write(" " +n.getId());
+                writer.write("].\n");
+            }
+        }
+	    writer.close();
+	}
 
-    private static Map<Particle, List<Particle>> runFinder( NeighborFinder finder, Input input) {
-        Map<Particle, List<Particle>> map = null;
+    private static Map<Particle, Set<Particle>> runFinder( NeighborFinder finder, Input input) {
+        Map<Particle, Set<Particle>> map = null;
         try{
             map = finder.findNeighbors(input);
         }
@@ -45,7 +65,7 @@ public class App
         return map;
     }
 
-    private static void printNeighbors( Map<Particle, List<Particle>> map ) {
+    private static void printNeighbors( Map<Particle, Set<Particle>> map ) {
         if(map != null)
         {
             for(Particle p : map.keySet())

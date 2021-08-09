@@ -1,13 +1,13 @@
 package ar.edu.itba.ss.cellindexmethod;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class CellIndexFinder implements NeighborFinder{
 	
 	@Override
-	public Map<Particle, List<Particle>> findNeighbors(Input input) throws Exception
+	public Map<Particle, Set<Particle>> findNeighbors(Input input) throws Exception
 	{
         // Put particles inside the matrix as Particles
         Cell[][] matrix = new Cell[input.getM()][input.getM()];
@@ -16,13 +16,13 @@ public class CellIndexFinder implements NeighborFinder{
         	for(int j=0; j < input.getM(); j++)
         		matrix[i][j] = new Cell();
         
-        Map<Particle, List<Particle>> map = new HashMap<>();
+        Map<Particle, Set<Particle>> map = new HashMap<>();
         for(Particle p : input.getParticles())
         {
         	int row = (int) (p.getY() / l);
         	int col = (int) (p.getX() / l);
         	matrix[row][col].addParticle(p);
-        	map.put(p, new LinkedList<>());
+        	map.put(p, new HashSet<>());
         }
         
         // Find neighbors
