@@ -93,6 +93,38 @@ public class Parser{
 		);
 	}
 
+	public Input parseMock(String[] args) throws Exception {
+		// TODO: Parse file
+		int N = 7;
+		double L = 5;
+		int M = 3;
+		double rc = 0.45;
+		boolean wallPeriod = true;
+		// Asumimos que está parseado el archivo. Si hay algo mal, tirar excepción
+
+		List<Particle> list = new LinkedList<Particle>();
+
+
+		list.add(new Particle(1, 1.5, 1.5, 0.25));
+		list.add(new Particle(2, 2.1, 1.5, 0.25));
+		list.add(new Particle(3, 3.5, 1.05, 0.25));
+		list.add(new Particle(4, 2.1, 2.1, 0.25));
+		list.add(new Particle(5, 0.95, 0.95, 0.25));
+		list.add(new Particle(6, 2.01, 0.95, 0.25));
+		list.add(new Particle(7, 4.01, 2.05, 0.25));
+		list.add(new Particle(8, 4.6, 4.5, 0.25));
+		list.add(new Particle(9, 4.6, 0.4, 0.25));
+
+		/*
+		// OVERLAPPING PARTICLES:
+		list.add(new Particle(11, 1.5, 1.5, 0.25));
+		list.add(new Particle(12, 1.5, 1.6, 0.25));
+		list.add(new Particle(13, 2.5, 1.95, 0.25));
+		list.add(new Particle(14, 2.5, 2.05, 0.25));
+		*/
+		return new Input(N, L, M, rc, wallPeriod, list);
+	}
+
 	private static class FileInput {
 		private final StaticInput staticInput;
 		private final DynamicInput dynamicInput;
@@ -144,7 +176,7 @@ public class Parser{
 					'}';
 		}
 	}
-	
+
 	private StaticInput parseFileStatic(String path) throws CannotOpenFileException, CannotReadLineException{
 		/*
 		 * File format:
@@ -271,39 +303,6 @@ public class Parser{
 			}
 		} catch (IOException e){
 			throw new CannotOpenFileException(path);
-		}
-	}
-
-	public static void main(String[] args){
-		/*
-		 * File format:
-		 * N
-		 * L
-		 * M
-		 * rc
-		 * r1
-		 * r2
-		 * ...
-		 * rN
-		 *
-		 */
-
-		/*
-		 * File format:
-		 * x1 y1
-		 * x2 y2
-		 * ...
-		 * xN yN
-		 */
-		System.out.println(Arrays.toString(args));
-		Parser parser = new Parser();
-		try {
-			StaticInput s = parser.parseFileStatic("static.txt");
-			DynamicInput d = parser.parseFileDynamic("dynamic.txt", s.N);
-			System.out.println(s);
-			System.out.println(d);
-		} catch (Exception e){
-			System.out.println(e.getMessage());
 		}
 	}
 }

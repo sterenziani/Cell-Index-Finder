@@ -1,63 +1,135 @@
 package ar.edu.itba.ss.cellindexmethod;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class CellIndexFinder implements NeighborFinder{
 	
 	@Override
-	public Output findNeighbors(Input input)
+	public Map<Particle, List<Particle>> findNeighbors(Input input) throws Exception
 	{
-		// TODO: Error if two particles share position
-        // Put particles inside the matrix as CIMParticles
+        // Put particles inside the matrix as Particles
+		if(input.getM() < 3)
+			throw new Exception("ERROR! M NEEDS TO BE LARGER THAN 3!");
         Cell[][] matrix = new Cell[input.getM()][input.getM()];
         double l = input.getL()/input.getM();
         for(int i=0; i < input.getM(); i++)
         	for(int j=0; j < input.getM(); j++)
         		matrix[i][j] = new Cell();
         
+        Map<Particle, List<Particle>> map = new HashMap<>();
         for(Particle p : input.getParticles())
         {
         	int row = (int) (p.getY() / l);
         	int col = (int) (p.getX() / l);
         	matrix[row][col].addParticle(p);
+        	map.put(p, new LinkedList<>());
         }
         
+        // Find neighbors
         for(int i=0; i < input.getM(); i++)
         {
         	for(int j=0; j < input.getM(); j++)
         	{
-    			for(CIMParticle p1 : matrix[i][j].getList())
+    			for(Particle p1 : matrix[i][j].getParticles())
     			{
-    				// Look for neighbors in this cell
-    				for(CIMParticle p2 : matrix[i][j].getList())
+    				// Get index of each cell to visit
+    				int upperRow = i-1;
+    				int lowerRow = i+1;
+    				int rightCol = j+1;
+    				if(input.getWallPeriod())
     				{
-    					if(!p1.equals(p2) && p1.getParticle().getId() < p2.getParticle().getId()
-    							&& p1.getParticle().isNeighbor(p2.getParticle(), input.getRc()))
+    					// Double mod to convert negative index
+    					upperRow = (upperRow % input.getM() + input.getM()) % input.getM();
+    					lowerRow = (lowerRow % input.getM() + input.getM()) % input.getM();
+    					rightCol = (rightCol % input.getM() + input.getM()) % input.getM();
+    				}
+    				
+    				// Look for neighbors in this cell
+    				for(Particle p2 : matrix[i][j].getParticles())
+    				{
+    					if(!p1.equals(p2) && p1.getId() < p2.getId() && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
+    						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
+    					if(!p1.equals(p2) && input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
+    						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+    					if(!p1.equals(p2) && p1.getId() < p2.getId()
+    							&& p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
     					{
-    						p1.getNeighbors().add(p2.getParticle());
-    						p2.getNeighbors().add(p1.getParticle());
+    						map.get(p1).add(p2);
+    						map.get(p2).add(p1);
     					}
     				}
-    				// Check neighbors in Upper Cell
-    				int upperRow = i-1;
-    				if(upperRow > 0 || input.getWallPeriod())
+    				// Check neighbors in Upper Cell, if reachable
+    				if(upperRow >= 0)
     				{
-    					// Loop to other side
-    					upperRow = upperRow % input.getM();
-        				for(CIMParticle p2 : matrix[upperRow][j].getList())
+        				for(Particle p2 : matrix[upperRow][j].getParticles())
         				{
-        					if(p1.getParticle().isNeighbor(p2.getParticle(), input.getRc()))
+        					if(!p1.equals(p2) && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
+        					if(input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+        					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
-        						p1.getNeighbors().add(p2.getParticle());
-        						p2.getNeighbors().add(p1.getParticle());
+        						map.get(p1).add(p2);
+        						map.get(p2).add(p1);
         					}
         				}
     				}
 
-    				// TODO: Check neighbors in Upper-Right Cell
-    				// TODO: Check neighbors in Right Cell
-    				// TODO: Check neighbors in Lower-Right Cell
+    				// Check neighbors in Upper-Right Cell, if reachable
+    				if(upperRow >= 0 && rightCol < input.getM())
+    				{
+        				for(Particle p2 : matrix[upperRow][rightCol].getParticles())
+        				{
+        					if(!p1.equals(p2) && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
+        					if(input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+        					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
+        					{
+        						map.get(p1).add(p2);
+        						map.get(p2).add(p1);
+        					}
+        				}
+    				}
+    				
+    				// Check neighbors in Right Cell, if reachable
+    				if(rightCol < input.getM())
+    				{
+        				for(Particle p2 : matrix[i][rightCol].getParticles())
+        				{
+        					if(!p1.equals(p2) && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
+        					if(input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+        					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
+        					{
+        						map.get(p1).add(p2);
+        						map.get(p2).add(p1);
+        					}
+        				}
+    				}
+    				
+    				// Check neighbors in Lower-Right cell, if reachable
+    				if(rightCol < input.getM() && lowerRow < input.getM())
+    				{
+        				for(Particle p2 : matrix[lowerRow][rightCol].getParticles())
+        				{
+        					if(!p1.equals(p2) && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
+        					if(input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+        					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
+        					{
+        						map.get(p1).add(p2);
+        						map.get(p2).add(p1);
+        					}
+        				}
+    				}
     			}
         	}
         }
-        return null;
+        return map;
 	}
 }

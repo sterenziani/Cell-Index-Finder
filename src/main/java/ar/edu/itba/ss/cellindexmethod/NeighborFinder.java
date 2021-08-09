@@ -1,5 +1,8 @@
 package ar.edu.itba.ss.cellindexmethod;
 
+import java.util.List;
+import java.util.Map;
+
 public interface NeighborFinder {
-	Output findNeighbors(Input input);
+	Map<Particle, List<Particle>> findNeighbors(Input input) throws Exception;
 }
