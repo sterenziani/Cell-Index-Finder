@@ -22,11 +22,13 @@ public class Parser{
 		private final String staticFile;
 		private final String dynamicFile;
 		private final boolean wallPeriod;
+		private final boolean randomize;
 
-		ArgumentInput(String staticFile, String dynamicFile, boolean wallPeriod){
+		ArgumentInput(String staticFile, String dynamicFile, boolean wallPeriod, boolean randomize){
 			this.staticFile = staticFile;
 			this.dynamicFile = dynamicFile;
 			this.wallPeriod = wallPeriod;
+			this.randomize = randomize;
 		}
 	}
 
@@ -48,6 +50,7 @@ public class Parser{
 		String staticFile = null;
 		String dynamicFile = null;
 		Boolean wallPeriod = false;
+		Boolean randomize = false;
 		for(Map.Entry<String, String> argument : arguments.entrySet()){
 			switch (argument.getKey()){
 				case "staticFile":
@@ -65,6 +68,13 @@ public class Parser{
 						wallPeriod = null;
 					}
 					break;
+				case "randomize":
+					if(argument.getValue().equalsIgnoreCase("true")){
+						randomize = true;
+					} else {
+						randomize = false;
+					}
+					break;
 			}
 		}
 		if(staticFile == null){
@@ -76,12 +86,12 @@ public class Parser{
 		if(wallPeriod == null){
 			throw new BadWallPeriodException();
 		}
-		return new ArgumentInput(staticFile, dynamicFile, wallPeriod);
+		return new ArgumentInput(staticFile, dynamicFile, wallPeriod, randomize);
 	}
 
 	public Input parse(String[] args) throws Exception{
 		ArgumentInput argumentInput = parseArguments(args);
-		FileInput fileInput = parseFiles(argumentInput.staticFile, argumentInput.dynamicFile);
+		FileInput fileInput = parseFiles(argumentInput.staticFile, argumentInput.dynamicFile, argumentInput.randomize);
 		return new Input(
 				fileInput.staticInput.N,
 				fileInput.staticInput.L,
@@ -93,16 +103,12 @@ public class Parser{
 	}
 
 	public Input parseMock(String[] args) throws Exception {
-		// TODO: Parse file
 		int N = 7;
 		double L = 5;
 		int M = 3;
 		double rc = 0.45;
 		boolean wallPeriod = true;
-		// Asumimos que está parseado el archivo. Si hay algo mal, tirar excepción
-
 		List<Particle> list = new LinkedList<Particle>();
-
 
 		list.add(new Particle(1, 1.5, 1.5, 0.25));
 		list.add(new Particle(2, 2.1, 1.5, 0.25));
@@ -134,9 +140,9 @@ public class Parser{
 		}
 	}
 	
-	private FileInput parseFiles(String staticPath, String dynamicPath) throws Exception {
-		StaticInput staticInput = parseFileStatic(staticPath);
-		DynamicInput dynamicInput = parseFileDynamic(dynamicPath, staticInput.N);
+	private FileInput parseFiles(String staticPath, String dynamicPath, Boolean randomize) throws Exception {
+		StaticInput staticInput = parseFileStatic(staticPath, randomize);
+		DynamicInput dynamicInput = parseFileDynamic(dynamicPath, staticInput.N, staticInput.L, randomize, staticInput.particleRadiusesMap);
 		return new FileInput(staticInput, dynamicInput);
 	}
 
@@ -153,10 +159,10 @@ public class Parser{
 		private final int N;
 		private final double L;
 		private final int M;
-		private final int rc;
+		private final double rc;
 		private final Map<Long, Double> particleRadiusesMap;
 
-		StaticInput(int N, double L, int M, int rc, Map<Long, Double> particleRadiusesMap){
+		StaticInput(int N, double L, int M, double rc, Map<Long, Double> particleRadiusesMap){
 			this.N = N;
 			this.L = L;
 			this.M = M;
@@ -176,7 +182,7 @@ public class Parser{
 		}
 	}
 
-	private StaticInput parseFileStatic(String path) throws CannotOpenFileException, CannotReadLineException{
+	private StaticInput parseFileStatic(String path, Boolean randomize) throws CannotOpenFileException, CannotReadLineException{
 		/*
 		 * File format:
 		 * N
@@ -193,7 +199,7 @@ public class Parser{
 			int N;
 			double L;
 			int M;
-			int rc;
+			double rc;
 
 			long currentLine = 1;
 			try{
@@ -211,16 +217,22 @@ public class Parser{
 				currentLine++;
 
 				//Line 4 should be rc
-				rc = Integer.parseInt(bufferedReader.readLine());
+				rc = Double.parseDouble(bufferedReader.readLine());
 				currentLine++;
 
 				//Now, line 5 through N+5 should be each particle (r1)
 				Map<Long, Double> particleRadiusesMap = new HashMap<>();
-				for(long i = 0; i < N; i++){
-					particleRadiusesMap.put(i, Double.parseDouble(bufferedReader.readLine()));
-					currentLine++;
+				if(randomize){
+					for(long i = 0; i < N; i++)
+						particleRadiusesMap.put(i+1, Math.random()*rc); // Particles won't have a radius larger than rc
 				}
-
+				else {
+					for(long i = 0; i < N; i++){
+						particleRadiusesMap.put(i+1, Double.parseDouble(bufferedReader.readLine()));
+						currentLine++;
+					}
+				}
+				
 				return new StaticInput(N, L, M, rc, particleRadiusesMap);
 			} catch (IOException | NumberFormatException e) {
 				throw new CannotReadLineException(path, currentLine);
@@ -265,7 +277,45 @@ public class Parser{
 
 	private static final String COORDINATE_Y = "coordinate y";
 
-	private DynamicInput parseFileDynamic(String path, int N) throws CannotOpenFileException, CannotReadLineException, MissingAttributeException {
+	private void generateRandomPoints(int N, double L, Map<Long, Double> particleRadiusesMap, Map<Long, Point> particlePositionsMap){
+		for(long i=0; i < N; i++) {
+			double x=0;
+			double y=0;
+			double distance = -1;
+			boolean checkNoOverlap = true;
+			while(distance < 0) {
+				x = Math.random()*L;
+				y = Math.random()*L;
+				distance = 0;
+				double x1, y1;
+				// Make sure it doesn't overlap any other point
+				if(checkNoOverlap)
+				{
+					for(Long k : particlePositionsMap.keySet()) {
+						x1 = x; y1 = y;
+						Point p2 = particlePositionsMap.get(k);
+						double x2 = p2.x;
+						double y2 = p2.y;
+						if(x1 < x2 && Math.abs(x1-x2) > Math.abs(L+x1-x2))
+							x1 += L;
+						else if(x2 < x1 && Math.abs(x1-x2) > Math.abs(x1-x2-L))
+							x2 += L;
+						if(y1 < y2 && Math.abs(y1-y2) > Math.abs(L+y1-y2))
+							y1 += L;
+						else if(y2 < y1 && Math.abs(y1-y2) > Math.abs(y1-y2-L))
+							y2 += L;
+						double centerDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+						double newDistance = centerDistance - particleRadiusesMap.get(i+1) - particleRadiusesMap.get(k);
+						distance = Double.min(distance, newDistance);
+					}
+				}
+			}
+			particlePositionsMap.put(i+1, new Point(x, y));
+		}
+	}
+	
+	private DynamicInput parseFileDynamic(String path, int N, double L, Boolean randomize, Map<Long, Double> particleRadiusesMap)
+			throws CannotOpenFileException, CannotReadLineException, MissingAttributeException {
 
 		/*
 		 * File format:
@@ -274,27 +324,29 @@ public class Parser{
 		 * ...
 		 * xN yN
 		 */
-
 		try(BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(path))){
 			long currentLine = 1;
 			try {
-
-				// Read each particle's position
 				Map<Long, Point> particlePositionsMap = new HashMap<>();
-				for(long i = 0; i < N; i++){
-					String[] particleAttrs = bufferedReader.readLine().split(" ");
+				if(randomize)
+					generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap);
+				else
+				{
+					// Read from file
+					for(long i = 0; i < N; i++){
+						String[] particleAttrs = bufferedReader.readLine().split(" ");
 
-					// Attributes should include coordinate x and coordinate y
-					if(particleAttrs.length < 2) {
-						throw new MissingAttributeException(path, currentLine, COORDINATE_Y);
+						// Attributes should include coordinate x and coordinate y
+						if(particleAttrs.length < 2) {
+							throw new MissingAttributeException(path, currentLine, COORDINATE_Y);
+						}
+
+						double x = Double.parseDouble(particleAttrs[0]);
+						double y = Double.parseDouble(particleAttrs[1]);
+						particlePositionsMap.put(i+1, new Point(x, y));
+						currentLine++;
 					}
-
-					double x = Double.parseDouble(particleAttrs[0]);
-					double y = Double.parseDouble(particleAttrs[1]);
-					particlePositionsMap.put(i, new Point(x, y));
-					currentLine++;
 				}
-
 				return new DynamicInput(particlePositionsMap);
 
 			} catch (IOException | NumberFormatException e){

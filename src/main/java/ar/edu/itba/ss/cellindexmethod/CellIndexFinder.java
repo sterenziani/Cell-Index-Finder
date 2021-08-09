@@ -10,8 +10,6 @@ public class CellIndexFinder implements NeighborFinder{
 	public Map<Particle, List<Particle>> findNeighbors(Input input) throws Exception
 	{
         // Put particles inside the matrix as Particles
-		if(input.getM() < 3)
-			throw new Exception("ERROR! M NEEDS TO BE LARGER THAN 3!");
         Cell[][] matrix = new Cell[input.getM()][input.getM()];
         double l = input.getL()/input.getM();
         for(int i=0; i < input.getM(); i++)
@@ -53,8 +51,7 @@ public class CellIndexFinder implements NeighborFinder{
     						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
     					if(!p1.equals(p2) && input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
     						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
-    					if(!p1.equals(p2) && p1.getId() < p2.getId()
-    							&& p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
+    					if(p1.getId() < p2.getId() && p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
     					{
     						map.get(p1).add(p2);
     						map.get(p2).add(p1);

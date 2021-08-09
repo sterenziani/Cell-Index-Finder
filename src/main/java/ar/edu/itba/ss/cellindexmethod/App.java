@@ -10,24 +10,25 @@ public class App
     {
         Instant start, end;
         Input input = getInput(args);
+        System.out.println("Files parsed!");
         if(input != null){
+        	// Brute Force
             start = Instant.now();
-            NeighborFinder finder = new CellIndexFinder();
+            NeighborFinder finder = new BruteForceFinder();
             Map<Particle, List<Particle>> map = runFinder(finder, input);
             end = Instant.now();
-            // Print lists of neighbors
             printNeighbors(map);
             Duration timeElapsed = Duration.between(start, end);
-            System.out.println("Execution finished in " +timeElapsed.toMillis() +" ms");
-
+            System.out.println("Brute Force Execution finished in " +timeElapsed.toMillis() +" ms\n\n\n");
+            
+            // Cell Index Method
             start = Instant.now();
-            finder = new BruteForceFinder();
+            finder = new CellIndexFinder();
             map = runFinder(finder, input);
             end = Instant.now();
-            // Print lists of neighbors
             printNeighbors(map);
             timeElapsed = Duration.between(start, end);
-            System.out.println("Execution finished in " +timeElapsed.toMillis() +" ms");
+            System.out.println("CellIndexFinder Execution finished in " +timeElapsed.toMillis() +" ms");
         }
     }
 
