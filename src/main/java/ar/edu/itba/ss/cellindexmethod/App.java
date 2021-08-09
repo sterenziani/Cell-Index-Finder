@@ -10,23 +10,25 @@ public class App
     {
         Instant start, end;
         Input input = getInput(args);
-        start = Instant.now();
-        NeighborFinder finder = new CellIndexFinder();
-        Map<Particle, List<Particle>> map = runFinder(finder, input);
-        end = Instant.now();
-        // Print lists of neighbors
-        printNeighbors(map);
-        Duration timeElapsed = Duration.between(start, end);
-        System.out.println("Execution finished in " +timeElapsed.toMillis() +" ms");
+        if(input != null){
+            start = Instant.now();
+            NeighborFinder finder = new CellIndexFinder();
+            Map<Particle, List<Particle>> map = runFinder(finder, input);
+            end = Instant.now();
+            // Print lists of neighbors
+            printNeighbors(map);
+            Duration timeElapsed = Duration.between(start, end);
+            System.out.println("Execution finished in " +timeElapsed.toMillis() +" ms");
 
-        start = Instant.now();
-        finder = new BruteForceFinder();
-        map = runFinder(finder, input);
-        end = Instant.now();
-        // Print lists of neighbors
-        printNeighbors(map);
-        timeElapsed = Duration.between(start, end);
-        System.out.println("Execution finished in " +timeElapsed.toMillis() +" ms");
+            start = Instant.now();
+            finder = new BruteForceFinder();
+            map = runFinder(finder, input);
+            end = Instant.now();
+            // Print lists of neighbors
+            printNeighbors(map);
+            timeElapsed = Duration.between(start, end);
+            System.out.println("Execution finished in " +timeElapsed.toMillis() +" ms");
+        }
     }
 
     private static Map<Particle, List<Particle>> runFinder( NeighborFinder finder, Input input) {
@@ -57,9 +59,9 @@ public class App
 
     private static Input getInput(String[] args) {
     	try {
-			return Parser.getInstance().parseMock(args);
+			return Parser.getInstance().parse(args);
 		} catch (Exception e) {
-			e.printStackTrace();
+            System.out.println(e.getMessage());
 			return null;
 		}
     }

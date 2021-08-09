@@ -30,10 +30,12 @@ public class Parser{
 		}
 	}
 
-	private ArgumentInput parseArguments(String[] args) throws AlreadyDefinedArgumentException, BadArgumentFormatException{
+	private ArgumentInput parseArguments(String[] args) throws AlreadyDefinedArgumentException,
+			BadArgumentFormatException, NoStaticFileSpecifiedException, NoDynamicFileSpecifiedException,
+			BadWallPeriodException {
 		Map<String, String> arguments = new HashMap<>();
 		for (String arg: args) {
-			String[] attr = arg.split("=", 1);
+			String[] attr = arg.split("=", 2);
 			if(attr.length >= 2) {
 				if (arguments.containsKey(attr[0])) {
 					throw new AlreadyDefinedArgumentException(attr[1], arguments.get(attr[0]));
@@ -55,9 +57,9 @@ public class Parser{
 					dynamicFile = argument.getValue();
 					break;
 				case "wallPeriod":
-					if(argument.getValue().toLowerCase().equals("true")){
+					if(argument.getValue().equalsIgnoreCase("true")){
 						wallPeriod = true;
-					} else if (argument.getValue().toLowerCase().equals("false")){
+					} else if (argument.getValue().equalsIgnoreCase("false")){
 						wallPeriod = false;
 					} else {
 						wallPeriod = null;
@@ -66,16 +68,13 @@ public class Parser{
 			}
 		}
 		if(staticFile == null){
-			// TODO: throw custom exception
-			throw new RuntimeException();
+			throw new NoStaticFileSpecifiedException();
 		}
 		if(dynamicFile == null){
-			// TODO: throw custom exception
-			throw new RuntimeException();
+			throw new NoDynamicFileSpecifiedException();
 		}
 		if(wallPeriod == null){
-			// TODO: throw custom exception
-			throw new RuntimeException();
+			throw new BadWallPeriodException();
 		}
 		return new ArgumentInput(staticFile, dynamicFile, wallPeriod);
 	}
