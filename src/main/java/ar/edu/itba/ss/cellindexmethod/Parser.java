@@ -23,18 +23,20 @@ public class Parser{
 		private final String dynamicFile;
 		private final boolean wallPeriod;
 		private final boolean randomize;
+		private final boolean sameRadius;
 
-		ArgumentInput(String staticFile, String dynamicFile, boolean wallPeriod, boolean randomize){
+		ArgumentInput(String staticFile, String dynamicFile, boolean wallPeriod, boolean randomize, boolean sameRadius){
 			this.staticFile = staticFile;
 			this.dynamicFile = dynamicFile;
 			this.wallPeriod = wallPeriod;
 			this.randomize = randomize;
+			this.sameRadius = sameRadius;
 		}
 	}
 
 	private ArgumentInput parseArguments(String[] args) throws AlreadyDefinedArgumentException,
 			BadArgumentFormatException, NoStaticFileSpecifiedException, NoDynamicFileSpecifiedException,
-			BadWallPeriodException {
+			BadWallPeriodException, BadRandomizeException, BadSameRadiusException {
 		Map<String, String> arguments = new HashMap<>();
 		for (String arg: args) {
 			String[] attr = arg.split("=", 2);
@@ -51,6 +53,7 @@ public class Parser{
 		String dynamicFile = null;
 		Boolean wallPeriod = false;
 		Boolean randomize = false;
+		Boolean sameRadius = false;
 		for(Map.Entry<String, String> argument : arguments.entrySet()){
 			switch (argument.getKey()){
 				case "staticFile":
@@ -71,8 +74,19 @@ public class Parser{
 				case "randomize":
 					if(argument.getValue().equalsIgnoreCase("true")){
 						randomize = true;
-					} else {
+					} else if(argument.getValue().equalsIgnoreCase("false")) {
 						randomize = false;
+					} else {
+						randomize = null;
+					}
+					break;
+				case "sameRadius":
+					if(argument.getValue().equalsIgnoreCase("true")){
+						sameRadius = true;
+					} else if(argument.getValue().equalsIgnoreCase("false")) {
+						sameRadius = false;
+					} else {
+						sameRadius = null;
 					}
 					break;
 			}
@@ -86,12 +100,18 @@ public class Parser{
 		if(wallPeriod == null){
 			throw new BadWallPeriodException();
 		}
-		return new ArgumentInput(staticFile, dynamicFile, wallPeriod, randomize);
+		if(randomize == null){
+			throw new BadRandomizeException();
+		}
+		if(sameRadius == null){
+			throw new BadSameRadiusException();
+		}
+		return new ArgumentInput(staticFile, dynamicFile, wallPeriod, randomize, sameRadius);
 	}
 
 	public Input parse(String[] args) throws Exception{
 		ArgumentInput argumentInput = parseArguments(args);
-		FileInput fileInput = parseFiles(argumentInput.staticFile, argumentInput.dynamicFile, argumentInput.randomize);
+		FileInput fileInput = parseFiles(argumentInput.staticFile, argumentInput.dynamicFile, argumentInput);
 		return new Input(
 				fileInput.staticInput.N,
 				fileInput.staticInput.L,
@@ -140,9 +160,9 @@ public class Parser{
 		}
 	}
 	
-	private FileInput parseFiles(String staticPath, String dynamicPath, Boolean randomize) throws Exception {
-		StaticInput staticInput = parseFileStatic(staticPath, randomize);
-		DynamicInput dynamicInput = parseFileDynamic(dynamicPath, staticInput.N, staticInput.L, randomize, staticInput.particleRadiusesMap);
+	private FileInput parseFiles(String staticPath, String dynamicPath, ArgumentInput args) throws Exception {
+		StaticInput staticInput = parseFileStatic(staticPath, args);
+		DynamicInput dynamicInput = parseFileDynamic(dynamicPath, staticInput.N, staticInput.L, args, staticInput.particleRadiusesMap);
 		return new FileInput(staticInput, dynamicInput);
 	}
 
@@ -150,7 +170,7 @@ public class Parser{
 		List<Particle> particles = new LinkedList<>();
 		for (Map.Entry<Long, Double> particleRadius: particleRadiusesMap.entrySet()) {
 			Point particlePosition = particlePositionsMap.get(particleRadius.getKey());
-			particles.add(new Particle(particleRadius.getKey(), particlePosition.x, particlePosition.y, particleRadius.getValue()));
+			particles.add(new Particle(particleRadius.getKey(), particlePosition.getX(), particlePosition.getY(), particleRadius.getValue()));
 		}
 		return particles;
 	}
@@ -182,7 +202,7 @@ public class Parser{
 		}
 	}
 
-	private StaticInput parseFileStatic(String path, Boolean randomize) throws CannotOpenFileException, CannotReadLineException{
+	private StaticInput parseFileStatic(String path, ArgumentInput args) throws CannotOpenFileException, CannotReadLineException{
 		/*
 		 * File format:
 		 * N
@@ -202,7 +222,7 @@ public class Parser{
 			double rc;
 
 			long currentLine = 1;
-			try{
+			try {
 
 				//Line 1 should be N
 				N = Integer.parseInt(bufferedReader.readLine());
@@ -222,11 +242,16 @@ public class Parser{
 
 				//Now, line 5 through N+5 should be each particle (r1)
 				Map<Long, Double> particleRadiusesMap = new HashMap<>();
-				if(randomize){
+				if (args.sameRadius){
+					double radius = Double.parseDouble(bufferedReader.readLine());
+					currentLine++;
+					for(long i = 0; i < N; i++){
+						particleRadiusesMap.put(i+1, radius);
+					}
+				} else if (args.randomize){
 					for(long i = 0; i < N; i++)
 						particleRadiusesMap.put(i+1, Math.random()*rc); // Particles won't have a radius larger than rc
-				}
-				else {
+				} else {
 					for(long i = 0; i < N; i++){
 						particleRadiusesMap.put(i+1, Double.parseDouble(bufferedReader.readLine()));
 						currentLine++;
@@ -256,65 +281,9 @@ public class Parser{
 					'}';
 		}
 	}
-
-	private static class Point {
-		private final double x;
-		private final double y;
-
-		Point(double x, double y){
-			this.x = x;
-			this.y = y;
-		}
-
-		@Override
-		public String toString() {
-			return "Point{" +
-					"x=" + x +
-					", y=" + y +
-					'}';
-		}
-	}
-
 	private static final String COORDINATE_Y = "coordinate y";
-
-	private void generateRandomPoints(int N, double L, Map<Long, Double> particleRadiusesMap, Map<Long, Point> particlePositionsMap){
-		for(long i=0; i < N; i++) {
-			double x=0;
-			double y=0;
-			double distance = -1;
-			boolean checkNoOverlap = true;
-			while(distance < 0) {
-				x = Math.random()*L;
-				y = Math.random()*L;
-				distance = 0;
-				double x1, y1;
-				// Make sure it doesn't overlap any other point
-				if(checkNoOverlap)
-				{
-					for(Long k : particlePositionsMap.keySet()) {
-						x1 = x; y1 = y;
-						Point p2 = particlePositionsMap.get(k);
-						double x2 = p2.x;
-						double y2 = p2.y;
-						if(x1 < x2 && Math.abs(x1-x2) > Math.abs(L+x1-x2))
-							x1 += L;
-						else if(x2 < x1 && Math.abs(x1-x2) > Math.abs(x1-x2-L))
-							x2 += L;
-						if(y1 < y2 && Math.abs(y1-y2) > Math.abs(L+y1-y2))
-							y1 += L;
-						else if(y2 < y1 && Math.abs(y1-y2) > Math.abs(y1-y2-L))
-							y2 += L;
-						double centerDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-						double newDistance = centerDistance - particleRadiusesMap.get(i+1) - particleRadiusesMap.get(k);
-						distance = Double.min(distance, newDistance);
-					}
-				}
-			}
-			particlePositionsMap.put(i+1, new Point(x, y));
-		}
-	}
 	
-	private DynamicInput parseFileDynamic(String path, int N, double L, Boolean randomize, Map<Long, Double> particleRadiusesMap)
+	private DynamicInput parseFileDynamic(String path, int N, double L, ArgumentInput args, Map<Long, Double> particleRadiusesMap)
 			throws CannotOpenFileException, CannotReadLineException, MissingAttributeException {
 
 		/*
@@ -328,8 +297,10 @@ public class Parser{
 			long currentLine = 1;
 			try {
 				Map<Long, Point> particlePositionsMap = new HashMap<>();
-				if(randomize)
-					generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap);
+				if(args.randomize){
+					ParticleGenerator particleGenerator = ParticleGenerator.getInstance();
+					particleGenerator.generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap);
+				}
 				else
 				{
 					// Read from file
