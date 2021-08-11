@@ -17,24 +17,30 @@ public class App
         Input input = getInput(args);
         System.out.println("Files parsed!");
         if(input != null){
-        	// Brute Force
-            start = Instant.now();
-            NeighborFinder finder = new BruteForceFinder();
-            Map<Particle, Set<Particle>> map = runFinder(finder, input);
-            end = Instant.now();
-            printNeighbors(map);
-            Duration timeElapsed = Duration.between(start, end);
-            System.out.println("Brute Force Execution finished in " +timeElapsed.toMillis() +" ms\n\n\n");
-            
-            // Cell Index Method
-            finder = new CellIndexFinder();
-            start = Instant.now();
-            map = runFinder(finder, input);
-            end = Instant.now();
-            printNeighbors(map);
-            timeElapsed = Duration.between(start, end);
-            System.out.println("CellIndexFinder Execution finished in " +timeElapsed.toMillis() +" ms");
-            outputNeighbors(map);
+            InputToCSV inputToCSV = InputToCSV.getInstance();
+            if(!inputToCSV.printToCSV(input)){
+                System.out.println("ERROR: Could not print input to CSV");
+            } else {
+
+                // Brute Force
+                start = Instant.now();
+                NeighborFinder finder = new BruteForceFinder();
+                Map<Particle, Set<Particle>> map = runFinder(finder, input);
+                end = Instant.now();
+                printNeighbors(map);
+                Duration timeElapsed = Duration.between(start, end);
+                System.out.println("Brute Force Execution finished in " + timeElapsed.toMillis() + " ms\n\n\n");
+
+                // Cell Index Method
+                finder = new CellIndexFinder();
+                start = Instant.now();
+                map = runFinder(finder, input);
+                end = Instant.now();
+                printNeighbors(map);
+                timeElapsed = Duration.between(start, end);
+                System.out.println("CellIndexFinder Execution finished in " + timeElapsed.toMillis() + " ms");
+                outputNeighbors(map);
+            }
         }
     }
     
