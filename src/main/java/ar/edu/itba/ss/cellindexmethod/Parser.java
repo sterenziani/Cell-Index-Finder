@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Parser{
-	private static final double RANDOM_MULTIPLIER = 0.8;
+	private static final double RANDOM_MULTIPLIER = 0.7;
 	private static Parser parser = null;
 	private Parser() {}
 	
@@ -113,7 +113,7 @@ public class Parser{
 	public Input parse(String[] args) throws Exception{
 		ArgumentInput argumentInput = parseArguments(args);
 		FileInput fileInput = parseFiles(argumentInput.staticFile, argumentInput.dynamicFile, argumentInput);
-		return new Input(
+		Input resp = new Input(
 				fileInput.staticInput.N,
 				fileInput.staticInput.L,
 				fileInput.staticInput.M,
@@ -121,6 +121,23 @@ public class Parser{
 				argumentInput.wallPeriod,
 				getParticles(fileInput.staticInput.N, fileInput.staticInput.particleRadiusesMap, fileInput.dynamicInput.particlePositionsMap)
 		);
+		for(Particle p1 : resp.getParticles())
+		{
+			for(Particle p2 : resp.getParticles())
+			{
+				if(p1.getId() < p2.getId())
+				{
+					if(p1.isOverlapping(p2, resp.getL(), resp.getM(), resp.getWallPeriod()))
+						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
+					if(p1.isNeighbor(p2, resp.getL(), resp.getM(), resp.getWallPeriod(), resp.getRc())
+							&& resp.getL()/resp.getM() <= resp.getRc() + p1.getRadius() + p2.getRadius())
+						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId()
+						+" DEFY (L/M > rc + r1 + r2) RULE! Please use a smaller M or smaller radiuses. "
+						+"r1 = " +p1.getRadius() +", r2 = " +p2.getRadius());
+				}
+			}
+		}
+		return resp;
 	}
 
 	private static class FileInput {

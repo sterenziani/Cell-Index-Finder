@@ -28,7 +28,6 @@ public class ParticleGenerator {
                 y = Math.random()*L;
                 distance = 0;
                 double x1, y1;
-                // Make sure it doesn't overlap any other point
                 if(checkNoOverlap)
                 {
                     for(Long k : particlePositionsMap.keySet()) {
