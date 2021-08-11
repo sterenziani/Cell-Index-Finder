@@ -21,7 +21,6 @@ public class App
             if(!inputToCSV.printToCSV(input)){
                 System.out.println("ERROR: Could not print input to CSV");
             } else {
-
                 // Brute Force
                 start = Instant.now();
                 NeighborFinder finder = new BruteForceFinder();

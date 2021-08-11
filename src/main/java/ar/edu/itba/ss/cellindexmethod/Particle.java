@@ -42,7 +42,7 @@ public class Particle {
 	
 	public boolean isNeighbor(Particle p2, double L, int M, boolean loop, double rc)
 	{
-		return Double.compare(getEdgeDistanceTo(p2, L, M, loop), rc) <= 0;
+		return Double.compare(Math.abs(getEdgeDistanceTo(p2, L, M, loop)), rc) <= 0;
 	}
 	
 	public boolean isOverlapping(Particle p, double L, int M, boolean loop)

@@ -49,8 +49,9 @@ public class CellIndexFinder implements NeighborFinder{
     				{
     					if(!p1.equals(p2) && p1.getId() < p2.getId() && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
     						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
-    					if(!p1.equals(p2) && input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
-    						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+    					if(!p1.equals(p2) && input.getL()/input.getM() - 0.001 <= input.getRc() + p1.getRadius() + p2.getRadius())
+    						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId()
+    						+" DEFY (L/M > rc + r1 + r2) RULE! Please use a smaller M");
     					if(p1.getId() < p2.getId() && p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
     					{
     						map.get(p1).add(p2);
@@ -64,8 +65,9 @@ public class CellIndexFinder implements NeighborFinder{
         				{
         					if(!p1.equals(p2) && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
         						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
-        					if(input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
-        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+        					if(input.getL()/input.getM() - 0.001 <= input.getRc() + p1.getRadius() + p2.getRadius())
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId()
+        						+" DEFY (L/M > rc + r1 + r2) RULE! Please use a smaller M");
         					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
         						map.get(p1).add(p2);
@@ -81,8 +83,9 @@ public class CellIndexFinder implements NeighborFinder{
         				{
         					if(!p1.equals(p2) && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
         						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
-        					if(input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
-        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+        					if(input.getL()/input.getM() - 0.001 <= input.getRc() + p1.getRadius() + p2.getRadius())
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId()
+        						+" DEFY (L/M > rc + r1 + r2) RULE! Please use a smaller M");
         					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
         						map.get(p1).add(p2);
@@ -98,8 +101,9 @@ public class CellIndexFinder implements NeighborFinder{
         				{
         					if(!p1.equals(p2) && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
         						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
-        					if(input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
-        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+        					if(input.getL()/input.getM() - 0.001 <= input.getRc() + p1.getRadius() + p2.getRadius())
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId()
+        						+" DEFY (L/M > rc + r1 + r2) RULE! Please use a smaller M");
         					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
         						map.get(p1).add(p2);
@@ -115,8 +119,9 @@ public class CellIndexFinder implements NeighborFinder{
         				{
         					if(!p1.equals(p2) && p1.isOverlapping(p2, input.getL(), input.getM(), input.getWallPeriod()))
         						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
-        					if(input.getL()/input.getM() <= input.getRc() + p1.getRadius() + p1.getRadius())
-        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" DEFY (L/M > rc + r1 + r2) RULE!");
+        					if(input.getL()/input.getM() - 0.001 <= input.getRc() + p1.getRadius() + p2.getRadius())
+        						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId()
+        						+" DEFY (L/M > rc + r1 + r2) RULE! Please use a smaller M");
         					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
         						map.get(p1).add(p2);

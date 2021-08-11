@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Parser{
+	private static final double RANDOM_MULTIPLIER = 0.8;
 	private static Parser parser = null;
 	private Parser() {}
 	
@@ -222,9 +223,18 @@ public class Parser{
 					for(long i = 0; i < N; i++){
 						particleRadiusesMap.put(i+1, radius);
 					}
-				} else if (args.randomize){
-					for(long i = 0; i < N; i++)
-						particleRadiusesMap.put(i+1, Math.random()*rc); // Particles won't have a radius larger than rc
+				} else if (args.randomize)
+				{
+					double maxSum = (L/M - rc)*RANDOM_MULTIPLIER;
+					double r1 = Math.random()*maxSum;
+					double r2 = 0;
+					particleRadiusesMap.put((long) 1, r1);
+					maxSum = (maxSum - r1)*RANDOM_MULTIPLIER;
+					for(long i=1; i < N; i++)
+					{
+						r2 = Math.random()*maxSum;
+						particleRadiusesMap.put(i+1, r2);
+					}
 				} else {
 					for(long i = 0; i < N; i++){
 						particleRadiusesMap.put(i+1, Double.parseDouble(bufferedReader.readLine()));
