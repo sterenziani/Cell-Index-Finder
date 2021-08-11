@@ -15,8 +15,8 @@ public class App
     {
         Instant start, end;
         Input input = getInput(args);
-        System.out.println("Files parsed!");
         if(input != null){
+            System.out.println("Files parsed!");
             InputToCSV inputToCSV = InputToCSV.getInstance();
             if(!inputToCSV.printToCSV(input)){
                 System.out.println("ERROR: Could not print input to CSV");
