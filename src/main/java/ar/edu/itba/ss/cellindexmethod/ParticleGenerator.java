@@ -5,16 +5,32 @@ import java.util.Map;
 public class ParticleGenerator {
 
     private static ParticleGenerator particleGenerator;
+	private static final double RANDOM_MULTIPLIER = 0.8;
 
     private ParticleGenerator() {
 
     }
 
     public static ParticleGenerator getInstance() {
-        if(particleGenerator == null){
+        if(particleGenerator == null)
             particleGenerator = new ParticleGenerator();
-        }
         return particleGenerator;
+    }
+    
+    public void generateRandomRadiuses(int N, double L, int M, double rc, Map<Long, Double> particleRadiusesMap)
+    {
+		particleRadiusesMap.put((long) 1, Math.random()*(L/M - rc)*RANDOM_MULTIPLIER);
+		for(long j=2; j <= N; j++)
+		{
+			double r2 = (L/M + rc);
+			for(long i=1; i < j; i++)
+			{
+				double r1 = particleRadiusesMap.get(i);
+				while(L/M <= rc + r1 + r2)
+					r2 = Math.random()*(L/M - rc - r1);
+			}
+			particleRadiusesMap.put(j, r2);
+		}
     }
 
     public void generateRandomPoints(int N, double L, Map<Long, Double> particleRadiusesMap, Map<Long, Point> particlePositionsMap){

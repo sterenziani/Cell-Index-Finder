@@ -9,8 +9,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Parser{
-	private static final double RANDOM_MULTIPLIER = 0.8;
 	private static Parser parser = null;
+	private ParticleGenerator particleGenerator = ParticleGenerator.getInstance();
 	private Parser() {}
 	
 	public static Parser getInstance() {
@@ -41,12 +41,13 @@ public class Parser{
 		Map<String, String> arguments = new HashMap<>();
 		for (String arg: args) {
 			String[] attr = arg.split("=", 2);
-			if(attr.length >= 2) {
-				if (arguments.containsKey(attr[0])) {
+			if(attr.length >= 2)
+			{
+				if (arguments.containsKey(attr[0]))
 					throw new AlreadyDefinedArgumentException(attr[1], arguments.get(attr[0]));
-				}
 				arguments.put(attr[0], attr[1]);
-			} else {
+			}
+			else{
 				throw new BadArgumentFormatException(attr[0]);
 			}
 		}
@@ -64,49 +65,41 @@ public class Parser{
 					dynamicFile = argument.getValue();
 					break;
 				case "wallPeriod":
-					if(argument.getValue().equalsIgnoreCase("true")){
+					if(argument.getValue().equalsIgnoreCase("true"))
 						wallPeriod = true;
-					} else if (argument.getValue().equalsIgnoreCase("false")){
+					else if(argument.getValue().equalsIgnoreCase("false"))
 						wallPeriod = false;
-					} else {
+					else
 						wallPeriod = null;
-					}
 					break;
 				case "randomize":
-					if(argument.getValue().equalsIgnoreCase("true")){
+					if(argument.getValue().equalsIgnoreCase("true"))
 						randomize = true;
-					} else if(argument.getValue().equalsIgnoreCase("false")) {
+					else if(argument.getValue().equalsIgnoreCase("false"))
 						randomize = false;
-					} else {
+					else
 						randomize = null;
-					}
 					break;
 				case "sameRadius":
-					if(argument.getValue().equalsIgnoreCase("true")){
+					if(argument.getValue().equalsIgnoreCase("true"))
 						sameRadius = true;
-					} else if(argument.getValue().equalsIgnoreCase("false")) {
+					else if(argument.getValue().equalsIgnoreCase("false"))
 						sameRadius = false;
-					} else {
+					else
 						sameRadius = null;
-					}
 					break;
 			}
 		}
-		if(staticFile == null){
+		if(staticFile == null)
 			throw new NoStaticFileSpecifiedException();
-		}
-		if(dynamicFile == null){
+		if(dynamicFile == null)
 			throw new NoDynamicFileSpecifiedException();
-		}
-		if(wallPeriod == null){
+		if(wallPeriod == null)
 			throw new BadWallPeriodException();
-		}
-		if(randomize == null){
+		if(randomize == null)
 			throw new BadRandomizeException();
-		}
-		if(sameRadius == null){
+		if(sameRadius == null)
 			throw new BadSameRadiusException();
-		}
 		return new ArgumentInput(staticFile, dynamicFile, wallPeriod, randomize, sameRadius);
 	}
 
@@ -121,23 +114,9 @@ public class Parser{
 				argumentInput.wallPeriod,
 				getParticles(fileInput.staticInput.N, fileInput.staticInput.particleRadiusesMap, fileInput.dynamicInput.particlePositionsMap)
 		);
-		for(Particle p1 : resp.getParticles())
-		{
-			for(Particle p2 : resp.getParticles())
-			{
-				if(p1.getId() < p2.getId())
-				{
-					if(p1.isOverlapping(p2, resp.getL(), resp.getM(), resp.getWallPeriod()))
-						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId() +" OVERLAP!");
-					if(p1.isNeighbor(p2, resp.getL(), resp.getM(), resp.getWallPeriod(), resp.getRc())
-							&& resp.getL()/resp.getM() <= resp.getRc() + p1.getRadius() + p2.getRadius())
-						throw new Exception("ERROR! PARTICLES " +p1.getId() +" AND " +p2.getId()
-						+" DEFY (L/M > rc + r1 + r2) RULE! Please use a smaller M or smaller radiuses. "
-						+"r1 = " +p1.getRadius() +", r2 = " +p2.getRadius());
-				}
-			}
-		}
-		return resp;
+		if(Validator.validateParticles(resp))
+			return resp;
+		return null;
 	}
 
 	private static class FileInput {
@@ -193,9 +172,7 @@ public class Parser{
 	}
 
 	private StaticInput parseFileStatic(String path, ArgumentInput args) throws CannotOpenFileException, CannotReadLineException{
-
-		/*
-		 * File format:
+		/* File format:
 		 * N
 		 * L
 		 * M
@@ -204,9 +181,7 @@ public class Parser{
 		 * r2
 		 * ...
 		 * rN
-		 *
 		 */
-
 		try(BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(path))){
 			int N;
 			double L;
@@ -215,7 +190,6 @@ public class Parser{
 
 			long currentLine = 1;
 			try {
-
 				//Line 1 should be N
 				N = Integer.parseInt(bufferedReader.readLine());
 				currentLine++;
@@ -234,44 +208,35 @@ public class Parser{
 
 				//Now, line 5 through N+5 should be each particle (r1)
 				Map<Long, Double> particleRadiusesMap = new HashMap<>();
-				if (args.sameRadius){
+				if (args.sameRadius)
+				{
 					double radius = Double.parseDouble(bufferedReader.readLine());
 					currentLine++;
-					for(long i = 0; i < N; i++){
+					for(long i = 0; i < N; i++)
 						particleRadiusesMap.put(i+1, radius);
-					}
-				} else if (args.randomize)
+				}
+				else if (args.randomize)
+					particleGenerator.generateRandomRadiuses(N, L, M, rc, particleRadiusesMap);
+				else
 				{
-					
-					particleRadiusesMap.put((long) 1, Math.random()*(L/M - rc)*RANDOM_MULTIPLIER);
-					for(long j=2; j <= N; j++)
-					{
-						double r2 = (L/M + rc);
-						for(long i=1; i < j; i++)
-						{
-							double r1 = particleRadiusesMap.get(i);
-							while(L/M <= rc + r1 + r2)
-								r2 = Math.random()*(L/M - rc - r1);
-						}
-						particleRadiusesMap.put(j, r2);
-					}
-				} else {
 					for(long i = 0; i < N; i++){
 						particleRadiusesMap.put(i+1, Double.parseDouble(bufferedReader.readLine()));
 						currentLine++;
 					}
 				}
-				
 				return new StaticInput(N, L, M, rc, particleRadiusesMap);
+				
 			} catch (IOException | NumberFormatException e) {
 				throw new CannotReadLineException(path, currentLine);
 			}
-		} catch (IOException e){
+		}
+		catch (IOException e){
 			throw new CannotOpenFileException(path);
 		}
 	}
 
-	private static class DynamicInput {
+	private static class DynamicInput
+	{
 		private final Map<Long, Point> particlePositionsMap;
 
 		DynamicInput(Map<Long, Point> particlePositionsMap){
@@ -280,9 +245,7 @@ public class Parser{
 
 		@Override
 		public String toString() {
-			return "DynamicInput{" +
-					"particlePositionsMap=" + particlePositionsMap +
-					'}';
+			return "DynamicInput{" +"particlePositionsMap=" + particlePositionsMap + '}';
 		}
 	}
 	private static final String COORDINATE_Y = "coordinate y";
@@ -302,7 +265,6 @@ public class Parser{
 			try {
 				Map<Long, Point> particlePositionsMap = new HashMap<>();
 				if(args.randomize){
-					ParticleGenerator particleGenerator = ParticleGenerator.getInstance();
 					particleGenerator.generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap);
 				}
 				else
@@ -312,9 +274,8 @@ public class Parser{
 						String[] particleAttrs = bufferedReader.readLine().split(" ");
 
 						// Attributes should include coordinate x and coordinate y
-						if(particleAttrs.length < 2) {
+						if(particleAttrs.length < 2)
 							throw new MissingAttributeException(path, currentLine, COORDINATE_Y);
-						}
 
 						double x = Double.parseDouble(particleAttrs[0]);
 						double y = Double.parseDouble(particleAttrs[1]);
