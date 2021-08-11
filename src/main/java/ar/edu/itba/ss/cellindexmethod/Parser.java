@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Parser{
-	private static final double RANDOM_MULTIPLIER = 0.7;
+	private static final double RANDOM_MULTIPLIER = 0.8;
 	private static Parser parser = null;
 	private Parser() {}
 	
@@ -242,15 +242,18 @@ public class Parser{
 					}
 				} else if (args.randomize)
 				{
-					double maxSum = (L/M - rc)*RANDOM_MULTIPLIER;
-					double r1 = Math.random()*maxSum;
-					double r2 = 0;
-					particleRadiusesMap.put((long) 1, r1);
-					maxSum = (maxSum - r1)*RANDOM_MULTIPLIER;
-					for(long i=1; i < N; i++)
+					
+					particleRadiusesMap.put((long) 1, Math.random()*(L/M - rc)*RANDOM_MULTIPLIER);
+					for(long j=2; j <= N; j++)
 					{
-						r2 = Math.random()*maxSum;
-						particleRadiusesMap.put(i+1, r2);
+						double r2 = (L/M + rc);
+						for(long i=1; i < j; i++)
+						{
+							double r1 = particleRadiusesMap.get(i);
+							while(L/M <= rc + r1 + r2)
+								r2 = Math.random()*(L/M - rc - r1);
+						}
+						particleRadiusesMap.put(j, r2);
 					}
 				} else {
 					for(long i = 0; i < N; i++){
