@@ -21,10 +21,17 @@ def plot_points( centers_filename: str, radius_filename: str, map_data_filename:
     fig = plt.gcf()
     axes = fig.gca()
 
-    
     for i, row in circles_df.iterrows():
         if int(row['id_c']) == study_particle_id:
             color = 'blue'
+            axes.add_artist(
+            plt.Circle(
+                ( row['x'], row['y']), 
+                map_data_df.iloc[0, 3],
+                color = 'purple',
+                fill=False
+                ),
+            )
         else:
             is_neighbor = False
             for j, rowN in neighbors_df.iterrows():
