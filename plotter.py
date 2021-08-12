@@ -5,7 +5,20 @@ from numpy.core.numeric import NaN
 import pandas as pd
 import numpy as np
 import sys
-import math
+
+from pandas.core.frame import DataFrame
+
+def create_neighbor_dict( neighbors_df: DataFrame ):
+    neighbor_dict = dict()
+    for i, row in neighbors_df.iterrows():
+        id = int(row['id'])
+        neighbor_dict[id] = set()
+        if len(row['p']) > 0 and row['p'] != 'nan':
+            neighbors = row['p'].split()
+            for neighbor in neighbors:
+                neighbor_dict[id].add(int(neighbor))
+    return neighbor_dict
+
 
 def plot_points( centers_filename: str, radius_filename: str, map_data_filename: str,  neighbors_filename: str, study_particle_id  ):
     centers_df = pd.read_csv( centers_filename )
@@ -13,6 +26,9 @@ def plot_points( centers_filename: str, radius_filename: str, map_data_filename:
     circles_df = centers_df.join(radius_df, on='id', lsuffix='_c', rsuffix='_r')
     map_data_df = pd.read_csv( map_data_filename )
     neighbors_df = pd.read_csv( neighbors_filename )
+    neighbors_df['p'] = neighbors_df['p'].astype(str)
+    neighbors_dict = create_neighbor_dict( neighbors_df)
+    neighbors_set = neighbors_dict[study_particle_id]
 
     plt.title("Cell Index Method")
     plt.xlabel('Position X')
@@ -33,14 +49,7 @@ def plot_points( centers_filename: str, radius_filename: str, map_data_filename:
                 ),
             )
         else:
-            is_neighbor = False
-            for j, rowN in neighbors_df.iterrows():
-                if not math.isnan(rowN['p']):
-                    neighbors = str(rowN['p']).split()
-                    for neighbor in neighbors:
-                        if int(row['id_c']) == int(float(neighbor)):
-                            is_neighbor = True
-            if is_neighbor:
+            if int(row['id_c']) in neighbors_set:
                 color = 'green'
             else:
                 color = 'red'
