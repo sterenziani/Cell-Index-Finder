@@ -10,7 +10,9 @@ import java.util.Set;
 public class App
 {
 	private final static String OUTPUT_FILE = "output.txt";
-	
+    private static final String OUTPUT_NEIGHBORS_BRUTE = "output_neighbors_brute.csv";
+    private static final String OUTPUT_NEIGHBORS_CMI = "output_neighbors_cmi.csv";
+
     public static void main( String[] args ) throws IOException
     {
         Instant start, end;
@@ -21,6 +23,7 @@ public class App
             if(!inputToCSV.printToCSV(input)){
                 System.out.println("ERROR: Could not print input to CSV");
             } else {
+
                 // Brute Force
                 start = Instant.now();
                 NeighborFinder finder = new BruteForceFinder();
@@ -29,7 +32,9 @@ public class App
                 printNeighbors(map);
                 Duration timeElapsed = Duration.between(start, end);
                 System.out.println("Brute Force Execution finished in " + timeElapsed.toMillis() + " ms\n\n\n");
-
+                OutputToCSV outputToCSV = OutputToCSV.getInstance();
+                outputToCSV.printToCSV(map, OUTPUT_NEIGHBORS_BRUTE);
+                
                 // Cell Index Method
                 finder = new CellIndexFinder();
                 start = Instant.now();
@@ -39,6 +44,7 @@ public class App
                 timeElapsed = Duration.between(start, end);
                 System.out.println("CellIndexFinder Execution finished in " + timeElapsed.toMillis() + " ms");
                 outputNeighbors(map);
+                outputToCSV.printToCSV(map, OUTPUT_NEIGHBORS_CMI);
             }
         }
     }

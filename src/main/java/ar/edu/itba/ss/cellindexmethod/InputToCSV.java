@@ -4,8 +4,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Iterator;
 
 public class InputToCSV {
     private static InputToCSV inputToCSV;
@@ -28,44 +26,6 @@ public class InputToCSV {
     }
 
     private static final String SEPARATOR = ",";
-
-    private boolean printColumnWithoutSeparator(BufferedWriter bufferedWriter, String colValue){
-        try {
-            bufferedWriter.write(colValue);
-        } catch (IOException e){
-            return false;
-        }
-        return true;
-    }
-
-    private boolean printColumnWithSeparator(BufferedWriter bufferedWriter, String colValue){
-        try {
-            if(!printColumnWithoutSeparator(bufferedWriter, colValue))
-                return false;
-            bufferedWriter.write(SEPARATOR);
-        } catch (IOException e){
-            return false;
-        }
-        return true;
-    }
-
-    private boolean printMultipleColumns(BufferedWriter bufferedWriter, String... colValues){
-        Iterator<String> iterator = Arrays.stream(colValues).iterator();
-        while (iterator.hasNext()){
-            String next = iterator.next();
-            if(iterator.hasNext()){
-                if(!printColumnWithSeparator(bufferedWriter, next)){
-                    return false;
-                }
-            } else {
-                if (!printColumnWithoutSeparator(bufferedWriter, next)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     private static final String HEAD_STATIC = "N,L,M,rc";
 
     private boolean printStatic(long N, double L, int M, double rc){
@@ -73,7 +33,8 @@ public class InputToCSV {
             bufferedWriter.write(HEAD_STATIC);
             bufferedWriter.newLine();
 
-            printMultipleColumns(bufferedWriter,
+            CSVPrintingUtilities.printMultipleColumns(bufferedWriter,
+                    SEPARATOR,
                     Long.toString(N),
                     Double.toString(L),
                     Integer.toString(M),
@@ -89,12 +50,12 @@ public class InputToCSV {
 
     private boolean printParticlesStatic(Iterable<Particle> particles){
         try(BufferedWriter bufferedWriter = Files.newBufferedWriter(Paths.get(OUTPUT_PARTICLES_STATIC))) {
-            if (!printColumnWithoutSeparator(bufferedWriter, HEAD_PARTICLES_STATIC))
+            if (!CSVPrintingUtilities.printColumnWithoutSeparator(bufferedWriter, HEAD_PARTICLES_STATIC))
                 return false;
             bufferedWriter.newLine();
 
             for (Particle p : particles) {
-                if(!printMultipleColumns(bufferedWriter, Long.toString(p.getId()), Double.toString(p.getRadius()))){
+                if(!CSVPrintingUtilities.printMultipleColumns(bufferedWriter, SEPARATOR, Long.toString(p.getId()), Double.toString(p.getRadius()))){
                     return false;
                 }
                 bufferedWriter.newLine();
@@ -109,12 +70,12 @@ public class InputToCSV {
 
     private boolean printParticlesDynamic(Iterable<Particle> particles){
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter(Paths.get(OUTPUT_PARTICLES_DYNAMIC))){
-            if (!printColumnWithoutSeparator(bufferedWriter, HEAD_PARTICLES_DYNAMIC))
+            if (!CSVPrintingUtilities.printColumnWithoutSeparator(bufferedWriter, HEAD_PARTICLES_DYNAMIC))
                 return false;
             bufferedWriter.newLine();
 
             for (Particle p : particles) {
-                if(!printMultipleColumns(bufferedWriter, Long.toString(p.getId()), Double.toString(p.getX()), Double.toString(p.getY()))){
+                if(!CSVPrintingUtilities.printMultipleColumns(bufferedWriter, SEPARATOR, Long.toString(p.getId()), Double.toString(p.getX()), Double.toString(p.getY()))){
                     return false;
                 }
                 bufferedWriter.newLine();
