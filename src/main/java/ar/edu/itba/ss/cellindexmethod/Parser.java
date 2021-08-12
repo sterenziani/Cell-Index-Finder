@@ -10,6 +10,7 @@ import java.util.*;
 
 public class Parser{
 	private static Parser parser = null;
+	private static final int TIMEOUT = 5000;
 	private ParticleGenerator particleGenerator = ParticleGenerator.getInstance();
 	private Parser() {}
 	
@@ -114,6 +115,10 @@ public class Parser{
 				argumentInput.wallPeriod,
 				getParticles(fileInput.staticInput.N, fileInput.staticInput.particleRadiusesMap, fileInput.dynamicInput.particlePositionsMap)
 		);
+		int bestM = Validator.getBestM(resp);
+		if(resp.getM() <= 0)
+			resp.setM(bestM);
+		System.out.println("Using M = " +resp.getM() +". Recommended: M = " +bestM);
 		if(Validator.validateParticles(resp))
 			return resp;
 		return null;
@@ -132,20 +137,22 @@ public class Parser{
 	private FileInput parseFiles(String staticPath, String dynamicPath, ArgumentInput args) throws Exception {
 		StaticInput staticInput = parseFileStatic(staticPath, args);
 		DynamicInput dynamicInput = parseFileDynamic(dynamicPath, staticInput.N, staticInput.L, args, staticInput.particleRadiusesMap);
+		staticInput.setN(dynamicInput.particlePositionsMap.size());
 		return new FileInput(staticInput, dynamicInput);
 	}
 
 	private List<Particle> getParticles(long N, Map<Long, Double> particleRadiusesMap, Map<Long, Point> particlePositionsMap){
 		List<Particle> particles = new LinkedList<>();
-		for (Map.Entry<Long, Double> particleRadius: particleRadiusesMap.entrySet()) {
-			Point particlePosition = particlePositionsMap.get(particleRadius.getKey());
-			particles.add(new Particle(particleRadius.getKey(), particlePosition.getX(), particlePosition.getY(), particleRadius.getValue()));
+		for(long i=1; i <= N; i++)
+		{
+			Point particlePosition = particlePositionsMap.get(i);
+			particles.add(new Particle(i, particlePosition.getX(), particlePosition.getY(), particleRadiusesMap.get(i)));
 		}
 		return particles;
 	}
 
 	private static class StaticInput {
-		private final int N;
+		private int N;
 		private final double L;
 		private final int M;
 		private final double rc;
@@ -157,6 +164,10 @@ public class Parser{
 			this.M = M;
 			this.rc = rc;
 			this.particleRadiusesMap = particleRadiusesMap;
+		}
+		
+		public void setN(int newN) {
+			this.N = newN;
 		}
 
 		@Override
@@ -216,7 +227,17 @@ public class Parser{
 						particleRadiusesMap.put(i+1, radius);
 				}
 				else if (args.randomize)
-					particleGenerator.generateRandomRadiuses(N, L, M, rc, particleRadiusesMap);
+				{
+					System.out.print("Generating radiuses...");
+					boolean done = particleGenerator.generateRandomRadiuses(N, L, M, rc, particleRadiusesMap, TIMEOUT);
+					while(!done)
+					{
+						N--;
+						particleRadiusesMap.clear();
+						System.out.print(".");
+						done = particleGenerator.generateRandomRadiuses(N, L, M, rc, particleRadiusesMap, TIMEOUT);
+					}
+				}
 				else
 				{
 					for(long i = 0; i < N; i++){
@@ -262,10 +283,20 @@ public class Parser{
 		 */
 		try(BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(path))){
 			long currentLine = 1;
+			long oldN = N;
 			try {
 				Map<Long, Point> particlePositionsMap = new HashMap<>();
 				if(args.randomize){
-					particleGenerator.generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap);
+					System.out.print("\nGenerating positions...");
+					boolean done = particleGenerator.generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap, TIMEOUT);
+					while(!done)
+					{
+						N *= 0.95;
+						particlePositionsMap.clear();
+						System.out.print(".");
+						done = particleGenerator.generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap, TIMEOUT);
+					}
+					System.out.println();
 				}
 				else
 				{
@@ -283,6 +314,8 @@ public class Parser{
 						currentLine++;
 					}
 				}
+				if(oldN != N)
+					System.out.println("Number of particles has been reduced to N = " +N + " to meet time limit requirements");
 				return new DynamicInput(particlePositionsMap);
 
 			} catch (IOException | NumberFormatException e){
