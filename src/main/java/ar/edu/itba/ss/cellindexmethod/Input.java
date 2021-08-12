@@ -4,7 +4,7 @@ import java.util.List;
 public class Input {
 	final private long N;
 	final private double L;
-	final private int M;
+	private int M;
 	final private double rc;
 	final boolean wallPeriod;
 	final private List<Particle> particles;
@@ -41,5 +41,9 @@ public class Input {
 
 	public List<Particle> getParticles() {
 		return particles;
+	}
+
+	public void setM(int newM) {
+		this.M = newM;
 	}
 }
