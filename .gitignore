@@ -52,8 +52,6 @@ target/
 
 *.MF
 *.eslintcache
-*.txt
-*.csv
 
 bin/output*
 bin/*.jar
