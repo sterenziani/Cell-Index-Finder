@@ -23,7 +23,7 @@ def create_neighbor_dict( neighbors_df: DataFrame ):
 def plot_points( centers_filename: str, radius_filename: str, map_data_filename: str,  neighbors_filename: str, study_particle_id  ):
     centers_df = pd.read_csv( centers_filename )
     radius_df = pd.read_csv( radius_filename )
-    circles_df = centers_df.join(radius_df, on='id', lsuffix='_c', rsuffix='_r')
+    circles_df = centers_df.join(radius_df, lsuffix='_c', rsuffix='_r')
     map_data_df = pd.read_csv( map_data_filename )
     neighbors_df = pd.read_csv( neighbors_filename )
     neighbors_df['p'] = neighbors_df['p'].astype(str)
