@@ -29,9 +29,9 @@ public class App
                 NeighborFinder finder = new BruteForceFinder();
                 Map<Particle, Set<Particle>> map = runFinder(finder, input);
                 end = Instant.now();
-                printNeighbors(map);
+                //printNeighbors(map);
                 Duration timeElapsed = Duration.between(start, end);
-                System.out.println("Brute Force Execution finished in " + timeElapsed.toMillis() + " ms\n\n\n");
+                System.err.println("Brute Force Execution finished in " + timeElapsed.toMillis() + " ms\n\n\n");
                 OutputToCSV outputToCSV = OutputToCSV.getInstance();
                 outputToCSV.printToCSV(map, OUTPUT_NEIGHBORS_BRUTE);
                 
@@ -40,9 +40,9 @@ public class App
                 start = Instant.now();
                 map = runFinder(finder, input);
                 end = Instant.now();
-                printNeighbors(map);
+                //printNeighbors(map);
                 timeElapsed = Duration.between(start, end);
-                System.out.println("CellIndexFinder Execution finished in " + timeElapsed.toMillis() + " ms");
+                System.err.println("CellIndexFinder Execution finished in " + timeElapsed.toMillis() + " ms");
                 outputNeighbors(map);
                 outputToCSV.printToCSV(map, OUTPUT_NEIGHBORS_CMI);
             }

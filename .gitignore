@@ -54,4 +54,6 @@ target/
 *.eslintcache
 *.txt
 *.csv
-/bin
+
+bin/output*
+bin/*.jar
