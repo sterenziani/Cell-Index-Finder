@@ -1,12 +1,22 @@
 package ar.edu.itba.ss.cellindexmethod;
-
-import ar.edu.itba.ss.cellindexmethod.exceptions.*;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import ar.edu.itba.ss.cellindexmethod.exceptions.AlreadyDefinedArgumentException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.BadArgumentFormatException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.BadRandomizeException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.BadSameRadiusException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.BadWallPeriodException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.CannotOpenFileException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.CannotReadLineException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.MissingAttributeException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.NoDynamicFileSpecifiedException;
+import ar.edu.itba.ss.cellindexmethod.exceptions.NoStaticFileSpecifiedException;
 
 public class Parser{
 	private static Parser parser = null;
@@ -106,15 +116,23 @@ public class Parser{
 
 	public Input parse(String[] args) throws Exception{
 		ArgumentInput argumentInput = parseArguments(args);
-		FileInput fileInput = parseFiles(argumentInput.staticFile, argumentInput.dynamicFile, argumentInput);
-		Input resp = new Input(
-				fileInput.staticInput.N,
-				fileInput.staticInput.L,
-				fileInput.staticInput.M,
-				fileInput.staticInput.rc,
-				argumentInput.wallPeriod,
-				getParticles(fileInput.staticInput.N, fileInput.staticInput.particleRadiusesMap, fileInput.dynamicInput.particlePositionsMap)
-		);
+		Input resp = null;
+		if(argumentInput.randomize)
+		{
+			resp = parseAndGenerate(argumentInput);
+		}
+		else
+		{
+			FileInput fileInput = parseFiles(argumentInput.staticFile, argumentInput.dynamicFile, argumentInput);
+			resp = new Input(
+					fileInput.staticInput.N,
+					fileInput.staticInput.L,
+					fileInput.staticInput.M,
+					fileInput.staticInput.rc,
+					argumentInput.wallPeriod,
+					getParticles(fileInput.staticInput.N, fileInput.staticInput.particleRadiusesMap, fileInput.dynamicInput.particlePositionsMap)
+			);
+		}
 		int bestM = Validator.getBestM(resp);
 		if(resp.getM() <= 0)
 			resp.setM(bestM);
@@ -182,6 +200,66 @@ public class Parser{
 		}
 	}
 
+	private Input parseAndGenerate(ArgumentInput args) throws CannotReadLineException, CannotOpenFileException
+	{
+		try(BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(args.staticFile))){
+			int N;
+			double L;
+			int M;
+			double rc;
+
+			long currentLine = 1;
+			try {
+				N = Integer.parseInt(bufferedReader.readLine());
+				currentLine++;
+				L = Double.parseDouble(bufferedReader.readLine());
+				System.out.println("L es " + L);
+				currentLine++;
+				M = Integer.parseInt(bufferedReader.readLine());
+				currentLine++;
+				rc = Double.parseDouble(bufferedReader.readLine());
+				currentLine++;
+				Map<Long, Double> particleRadiusesMap = new HashMap<>();
+				Map<Long, Point> particlePositionsMap = new HashMap<>();
+				if (args.sameRadius)
+				{
+					double radius = Double.parseDouble(bufferedReader.readLine());
+					currentLine++;
+					for(long i = 0; i < N; i++)
+						particleRadiusesMap.put(i+1, radius);
+					System.out.print("\nGenerating positions...");
+					boolean done = particleGenerator.generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap, TIMEOUT);
+					while(!done)
+					{
+						N *= 0.95;
+						particlePositionsMap.clear();
+						System.out.print(".");
+						done = particleGenerator.generateRandomPoints(N, L, particleRadiusesMap, particlePositionsMap, TIMEOUT);
+					}
+					System.out.println();
+				}
+				else
+				{
+					System.out.print("Generating radiuses and positions...");
+					boolean done = particleGenerator.generateRandomParticles(N, L, M, rc, particleRadiusesMap, particlePositionsMap, TIMEOUT);
+					while(!done)
+					{
+						N *= 0.95;
+						particleRadiusesMap.clear();
+						System.out.print(".");
+						done = particleGenerator.generateRandomParticles(N, currentLine, M, rc, particleRadiusesMap, particlePositionsMap, TIMEOUT);
+					}
+				}
+				return new Input(N, L, M, rc, args.wallPeriod, getParticles(N, particleRadiusesMap, particlePositionsMap));
+			} catch (IOException | NumberFormatException e) {
+				throw new CannotReadLineException(args.staticFile, currentLine);
+			}
+		}
+		catch (IOException e){
+			throw new CannotOpenFileException(args.staticFile);
+		}
+	}
+	
 	private StaticInput parseFileStatic(String path, ArgumentInput args) throws CannotOpenFileException, CannotReadLineException{
 		/* File format:
 		 * N
