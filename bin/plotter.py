@@ -43,7 +43,7 @@ def plot_points( centers_filename: str, radius_filename: str, map_data_filename:
             axes.add_artist(
             plt.Circle(
                 ( row['x'], row['y']), 
-                map_data_df.iloc[0, 3],
+                map_data_df.iloc[0, 3] + row['r'],
                 color = 'purple',
                 fill=False
                 ),
@@ -60,6 +60,7 @@ def plot_points( centers_filename: str, radius_filename: str, map_data_filename:
                 color = color
                 ),
             )
+        axes.annotate(int(float(row['id_c'])), xy=(row['x'], row['y']))
     major_ticks = np.arange(0, map_data_df.iloc[0, 1], map_data_df.iloc[0, 2])
     axes.set_xticks(major_ticks)
     axes.set_yticks(major_ticks)
