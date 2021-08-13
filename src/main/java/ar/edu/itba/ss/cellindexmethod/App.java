@@ -45,6 +45,29 @@ public class App
                 System.err.println("CellIndexFinder Execution finished in " + timeElapsed.toMillis() + " ms");
                 outputNeighbors(map);
                 outputToCSV.printToCSV(map, OUTPUT_NEIGHBORS_CMI);
+                
+                // Test
+                int i=0;
+                System.out.println("What's the best M:");
+                try {
+					while(Validator.validateParticles(input))
+					{
+						finder = new CellIndexFinder();
+						i++;
+						input.setM(i);
+					    start = Instant.now();
+					    map = runFinder(finder, input);
+					    end = Instant.now();
+					    //printNeighbors(map);
+					    timeElapsed = Duration.between(start, end);
+					    int pairs = 0;
+					    for(Particle p : map.keySet())
+					        pairs += map.get(p).size();
+					    System.out.println("M = " +input.getM() +". CellIndexFinder Execution finished in " + timeElapsed.toMillis() + " ms and found " +pairs/2 +" pairs");
+					}
+				} catch (Exception e) {
+					System.out.println("Max M reached!");
+				}
             }
         }
     }
