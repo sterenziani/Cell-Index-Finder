@@ -13,25 +13,23 @@ public class App
     private static final String OUTPUT_NEIGHBORS_BRUTE = "output_neighbors_brute.csv";
     private static final String OUTPUT_NEIGHBORS_CMI = "output_neighbors_cmi.csv";
 
-    public static void main( String[] args ) throws IOException
+    public static void main(String[] args) throws IOException
     {
         Instant start, end;
         Input input = getInput(args);
         if(input != null){
-            System.out.println("Files parsed!");
             InputToCSV inputToCSV = InputToCSV.getInstance();
             if(!inputToCSV.printToCSV(input)){
                 System.out.println("ERROR: Could not print input to CSV");
             } else {
-
                 // Brute Force
                 start = Instant.now();
                 NeighborFinder finder = new BruteForceFinder();
                 Map<Particle, Set<Particle>> map = runFinder(finder, input);
                 end = Instant.now();
-                //printNeighbors(map);
+                printNeighbors(map);
                 Duration timeElapsed = Duration.between(start, end);
-                System.err.println("Brute Force Execution finished in " + timeElapsed.toMillis() + " ms\n\n\n");
+                System.err.println("Brute Force Execution finished in " + timeElapsed.toMillis() + " ms");
                 OutputToCSV outputToCSV = OutputToCSV.getInstance();
                 outputToCSV.printToCSV(map, OUTPUT_NEIGHBORS_BRUTE);
                 
@@ -40,7 +38,6 @@ public class App
                 start = Instant.now();
                 map = runFinder(finder, input);
                 end = Instant.now();
-                //printNeighbors(map);
                 timeElapsed = Duration.between(start, end);
                 System.err.println("CellIndexFinder Execution finished in " + timeElapsed.toMillis() + " ms");
                 outputNeighbors(map);
@@ -48,7 +45,7 @@ public class App
                 
                 // Test
                 int i=0;
-                System.out.println("What's the best M:");
+                System.out.println("\nWhat's the best M:");
                 try {
 					while(Validator.validateParticles(input))
 					{
@@ -58,7 +55,6 @@ public class App
 					    start = Instant.now();
 					    map = runFinder(finder, input);
 					    end = Instant.now();
-					    //printNeighbors(map);
 					    timeElapsed = Duration.between(start, end);
 					    int pairs = 0;
 					    for(Particle p : map.keySet())

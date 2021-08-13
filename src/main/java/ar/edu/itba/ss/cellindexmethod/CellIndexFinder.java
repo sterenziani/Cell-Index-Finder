@@ -24,7 +24,6 @@ public class CellIndexFinder implements NeighborFinder{
         	matrix[row][col].addParticle(p);
         	map.put(p, new HashSet<>());
         }
-        
         // Find neighbors
         for(int i=0; i < input.getM(); i++)
         {
@@ -58,7 +57,7 @@ public class CellIndexFinder implements NeighborFinder{
     				{
         				for(Particle p2 : matrix[upperRow][j].getParticles())
         				{
-        					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
+        					if(!p1.equals(p2) && p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
         						map.get(p1).add(p2);
         						map.get(p2).add(p1);
@@ -71,7 +70,7 @@ public class CellIndexFinder implements NeighborFinder{
     				{
         				for(Particle p2 : matrix[upperRow][rightCol].getParticles())
         				{
-        					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
+        					if(!p1.equals(p2) && p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
         						map.get(p1).add(p2);
         						map.get(p2).add(p1);
@@ -84,7 +83,7 @@ public class CellIndexFinder implements NeighborFinder{
     				{
         				for(Particle p2 : matrix[i][rightCol].getParticles())
         				{
-        					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
+        					if(!p1.equals(p2) && p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
         						map.get(p1).add(p2);
         						map.get(p2).add(p1);
@@ -97,7 +96,7 @@ public class CellIndexFinder implements NeighborFinder{
     				{
         				for(Particle p2 : matrix[lowerRow][rightCol].getParticles())
         				{
-        					if(p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
+        					if(!p1.equals(p2) && p1.isNeighbor(p2, input.getL(), input.getM(), input.getWallPeriod(), input.getRc()))
         					{
         						map.get(p1).add(p2);
         						map.get(p2).add(p1);
