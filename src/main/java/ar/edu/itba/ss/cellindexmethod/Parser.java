@@ -136,7 +136,7 @@ public class Parser{
 		int bestM = Validator.getBestM(resp);
 		if(resp.getM() <= 0)
 			resp.setM(bestM);
-		System.out.println("Using M = " +resp.getM() +". Recommended: M = " +bestM);
+		System.out.println("Using M = " +resp.getM() +". Recommended: M = " +bestM +" (for the worst case scenario. You may use larger Ms in a static scenario)");
 		if(Validator.validateParticles(resp))
 			return resp;
 		return null;
