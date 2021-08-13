@@ -36,7 +36,7 @@
               <addClasspath>true</addClasspath>
               <classpathPrefix>libs/</classpathPrefix>
               <mainClass>
-                ar.edu.itba.ss.cellindexmethod.Parser
+                ar.edu.itba.ss.cellindexmethod.App
               </mainClass>
             </manifest>
           </archive>
