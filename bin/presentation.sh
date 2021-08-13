@@ -16,7 +16,7 @@
 #    figura que muestre las posiciones de todas las particulas y que identifique una de ellas y sus vecinos
 #
 
-java -jar cellindexmethod-0.0.1-SNAPSHOT.jar staticFile=input/static.txt dynamicFile=input/dynamic.txt wallPeriod=false randomize=true sameRadius=false 2> output_exec_time.txt 1> /dev/null
+java -jar cellindexmethod-0.0.1-SNAPSHOT.jar staticFile=input/static.txt dynamicFile=input/dynamic.txt wallPeriod=false randomize=false sameRadius=false 2> output_exec_time.txt 1> /dev/null
 
 # Lista de vecinos con Cell Index Method
 cat output_neighbors_cmi.csv
